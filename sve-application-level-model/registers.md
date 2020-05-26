@@ -23,3 +23,16 @@ There are 32 scalable vector registers, `z0 ~ z31`
 * For all instruction except those listed in Predicate Permute, the last bit in each element of the predict register is focused. The other bits will be ignored and set to zero on writes.
 * If the last bit is 1, the predict element if `TRUE`; if it is 0, then the predict element is `FALSE`
 
+> An instruction which supports the prediction is called a predicted instruction.
+
+> The predicate register that is used to determine the Active elements of a predicated instruction is known as the Governing predicate for that instruction.
+
+* Many predicted instructions are only supported to use `P0 ~ P7`.
+* When the governing predicate element is TRUE, then the corresponding vector or predicate register element is Active and is processed by the instruction; if it is FALSE, it is inactive and takes no part in the operation of the instruction.
+
+> When a predicted instruction writes to a vector or predict destination registers and the Inactive elements in the destination are set to zero, this is known as zeroing predication.
+
+> When a predicted instruction writes to a vector or predict destination registers and the Inactive elements in the destination retain their previous value, this is known as merging predication.
+
+![Figure 4: Predict registers can be interpreted differently](../.gitbook/assets/image%20%283%29.png)
+
