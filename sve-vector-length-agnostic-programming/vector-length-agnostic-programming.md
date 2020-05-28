@@ -21,8 +21,6 @@ void example01(int *restrict a, const int *b, const int *c, long N)
 }
 ```
 
-### 
-
 ### Programs on ARM Neon
 
 ```c
@@ -45,7 +43,9 @@ void example01_neon(int *restrict a, const int *b,
 
 ```
 
-```c
+### Programs on SVE
+
+```bash
     # x0 is 'a', 
     # x1 is 'b', 
     # x2 is 'c', 
@@ -66,8 +66,20 @@ cond:
     b.first    loop_body   # branch to 'loop_body' if the first bit in the predicate
                            # register 'p0' is set
     ret
-    
-    # How whilelt works:
+```
+
+The SVE assembler code can be transferred to the pseudo C code:
+
+```c
+while( /* cond */ ) {
+  /* loop */
+}
+```
+
+Here is the introduction of the condition:
+
+```bash
+# How whilelt works:
     # It sets each predicate elements in the predicate register p0 if we have:
     # p0.s[idx] := (x3 + idx) < x4   (x3 and x4 hold i and N respectively)
     # This is an example of 256-bit SVE implementation for N=7
@@ -79,8 +91,11 @@ cond:
     # to the loop_body label.
     # b.first checks if the first (LSB) element of p0 is set to true which means there
     # are any further elements to process in the next iteration of the loop.
-    
 ```
 
+Here is the introduction of the loop body:
 
+```bash
+
+```
 
