@@ -66,5 +66,21 @@ cond:
     b.first    loop_body   # branch to 'loop_body' if the first bit in the predicate
                            # register 'p0' is set
     ret
+    
+    # How whilelt works:
+    # It sets each predicate elements in the predicate register p0 if we have:
+    # p0.s[idx] := (x3 + idx) < x4   (x3 and x4 hold i and N respectively)
+    # This is an example of 256-bit SVE implementation for N=7
+    # P0 = [0000 0001 0001 0001 0001 0001 0001 0001]
+    #          7    6    5    4    3    2    1    0    32-bit lanes 'x'
+    
+    # The whilelt not only builds the predicate p0, but also sets the condition flags
+    # b.first instruction reads those flags and decides whether or not to branch
+    # to the loop_body label.
+    # b.first checks if the first (LSB) element of p0 is set to true which means there
+    # are any further elements to process in the next iteration of the loop.
+    
 ```
+
+
 
