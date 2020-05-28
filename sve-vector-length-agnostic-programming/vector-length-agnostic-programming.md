@@ -1,5 +1,7 @@
 # Vector Length Agnostic Programming
 
+## Examples on VLA Programming
+
 > The goal of SVE is to allow the same program binary to be run on any implementation of the architecture, which might implement different vector lengths
 
 > The SVE features requires a new programming style, called Vector Length Agnostic \(VLA\).
@@ -79,7 +81,8 @@ while( /* cond */ ) {
 Here is the introduction of the condition:
 
 ```bash
-# How whilelt works:
+    # How whilelt works:
+    
     # It sets each predicate elements in the predicate register p0 if we have:
     # p0.s[idx] := (x3 + idx) < x4   (x3 and x4 hold i and N respectively)
     # This is an example of 256-bit SVE implementation for N=7
@@ -96,6 +99,9 @@ Here is the introduction of the condition:
 Here is the introduction of the loop body:
 
 ```bash
-
+ld1w  # it uses "register plus register address mode"
+incw  # increment the index x4 according to the current SVE vector length!!
 ```
+
+## More on Predication
 
