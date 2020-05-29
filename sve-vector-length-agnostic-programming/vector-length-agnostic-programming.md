@@ -159,3 +159,47 @@ p1/m  # merging the p1 predication register
 # merging: does not change the inactive lanes
 ```
 
+If we have C program like this:
+
+```c
+int example03(int *a, int *b, long N)
+{
+  long i;
+  int s = 0;
+  for (i = 0; i < N; ++i)
+    if (b[i])
+      s += a[i];
+  return s;
+}
+```
+
+Then, its assembly on SVE looks like this:
+
+```bash
+     mov     x5, 0   # set 'i = 0'
+     mov     z0.s, 0 # set the accumulator 's' to zero
+     b       cond
+loop_body:
+     ld1w    z4.s, p0/z, [x1, x5, lsl 2] # load a  vector
+                                         # at 'b + i'
+     cmpne   p1.s, p0/z, z4.s, 0         # compare non zero
+                                         # into predicate 'p1'
+     # from now on all the instructions depending on the 'if' statement are
+     # predicated with 'p1'
+     ld1w    z1.s, p1/z, [x0, x5, lsl 2]
+     add     z0.s, p1/m, z0.s, z1.s      # the inactive lanes
+                                         # retain the partial sums
+                                         #  of the previous iterations
+     incw    x5
+cond:
+     whilelt p0.s, x5, x3
+     b.first loop_body
+     ptrue p0.s
+     saddv d0, p0, z0.s # signed add words across the lanes of z0, and place the
+                       # scalar result in d0
+     mov w0, v0.s[0]
+     ret
+```
+
+`cmpne` compare each element in `z4` with `zero` and if it satisfies the condition, it will set the corresponding predicate register in `p1`. `ld1w` instruction loads the long vector to the vector register `z1` regardless to the predicate register. Then, the `add` instruction add the elements with active predicate register and the inactive lanes retain the partial sums of the previous iteration.
+
