@@ -105,3 +105,57 @@ incw  # increment the index x4 according to the current SVE vector length!!
 
 ## More on Predication
 
+> What about the `if` statement in the vectorized loops?
+
+Now we have a if condition inside the for loop. Here is the C program version:
+
+```c
+void example02(int *restrict a, const int *b, const int *c, long N,
+                      const int *d)
+{
+  long i;
+  for (i = 0; i < N; ++i)
+    if (d[i] > 0)
+      a[i] = b[i] + c[i];
+}
+```
+
+### Programs on SVE
+
+```bash
+# x0 is 'a', 
+# x1 is 'b', 
+# x2 is 'c', 
+# x3 is 'N', 
+# x4 is 'd', 
+# x5 is 'i'
+
+    mov     x5, 0 # set 'i = 0'
+    b       cond
+loop_body:
+    ld1w    z4.s, p0/z, [x4, x5, lsl 2] # load a vector from 'd + i'
+    cmpgt   p1.s, p0/z, z4.s, 0         # compare greater than zero
+                                        # p1.s[idx] = z4.s[idx] > 0
+    # from now on all the instructions depending on the 'if' statement are
+    # predicated with 'p1'
+    ld1w    z0.s, p1/z, [x1, x5, lsl 2]
+    ld1w    z1.s, p1/z, [x2, x5, lsl 2]
+    add     z0.s, p1/m, z0.s, z1.s
+    st1w    z0.s, p1, [x0, x5, lsl 2]
+    incw    x5
+cond:
+    whilelt p0.s, x5, x3
+    b.ne    loop_body
+    ret
+```
+
+## Merging and Zeroing Predication
+
+```bash
+p1/z  # zeroing the p1 predication register
+p1/m  # merging the p1 predication register
+
+# zeroing: sets the inactive lanes to zero
+# merging: does not change the inactive lanes
+```
+
