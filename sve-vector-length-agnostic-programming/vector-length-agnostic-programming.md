@@ -203,3 +203,38 @@ cond:
 
 `cmpne` compare each element in `z4` with `zero` and if it satisfies the condition, it will set the corresponding predicate register in `p1`. `ld1w` instruction loads the long vector to the vector register `z1` regardless to the predicate register. Then, the `add` instruction add the elements with active predicate register and the inactive lanes retain the partial sums of the previous iteration.
 
+## Gather loads
+
+> One important feature of SVE is the gather load / scatter store set of instructions. It allows the processor to operate on non-contiguous data in memory.
+
+```c
+// Loads data from an array of addresses
+
+void example04(int *restrict a, const int *b, const int *c,
+               long N, const int *d)
+{
+  long i;
+  for (i = 0; i < N; ++i)
+      a[i] = b[d[i]] + c[i];
+}
+```
+
+```bash
+     mov     x5, 0
+     b       cond
+loop:
+     ld1w    z1.s, p0/z, [x4, x5, lsl 2]
+     ld1w    z0.s, p0/z, [x1, z1.s, sxtw 2] # load a vector
+                                            # from  'x1 + sxtw(z1.s) << 2'
+     ld1w    z1.s, p0/z, [x2, x5, lsl 2]
+     add     z0.s, p0/m, z0.s, z1.s
+     st1w    z0.s, p0, [x0, x5, lsl 2]
+     incw    x5
+cond:
+     whilelt p0.s, x5, x3
+     b.first    loop
+     ret
+```
+
+Here, we use a special version of `ld1w`, `ld1w  z0.s, p0/z, [x1, z1.s, sxtw 2]`. The values that are stored in `z1.s` interpreted as 32-bit scaled indices, and sign extended \(`sxtw`\) to 64-bit before being left-shifted by two and added to the base address `x4`. This is called _**scalar plus vector**_ addressing mode.
+
