@@ -44,7 +44,7 @@ void example_sum_squares( int N, int * sum) {
 * If at least one positive input element exists, the next loop iteration occurs. Otherwise, the loop exists. This is done by `B.FIRST`.
 * UADDV sums up all the partial sums according to the predicate register `p1`. It locates outside the loop.
 
-he SVE vector length agnostic vectorization code can be rewritten in C with the [ARM C language extension \(ACLE\) for SVE](https://developer.arm.com/docs/100987/latest/arm-c-language-extensions-for-sve):
+The SVE vector length agnostic vectorization code can be rewritten in C with the [ARM C language extension \(ACLE\) for SVE](https://developer.arm.com/docs/100987/latest/arm-c-language-extensions-for-sve):
 
 ```c
 void example_sum_squares( int N, int * sum) {
